@@ -2,7 +2,10 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const passport = require('passport')
 const logger = require('morgan');
+const User = require('./models/user');
+const session = require('express-session');
 
 const indexRouter = require('./routes/index');
 const postsRouter = require('./routes/posts');
@@ -20,6 +23,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// configure Passport and Sessions
+app.use(session({
+  secret: 'Hang on there!',
+  resave: false,
+  saveUninitialized: true
+}))
+
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// Mount route
 app.use('/', indexRouter);
 app.use('/posts', postsRouter);
 app.use('/posts/:id/reviews', reviewsRouter);
